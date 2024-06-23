@@ -20,16 +20,5 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            echo "Creating directory if it doesn't exist"
-            mkdir -p ~/nest-hello-world/ || { echo "Failed to create directory"; exit 1; }
-
-            echo "Changing directory to ~/nest-hello-world/"
-            cd ~/nest-hello-world/ || { echo "Failed to change directory"; exit 1; }
-
-            echo "Pulling latest changes from git"
-            git pull origin main || { echo "Git pull failed"; exit 1; }
-
-            echo "Starting the application"
-            npm run start || { echo "Failed to start the application"; exit 1; }
-
-            echo "Deployment completed successfully"
+            git pull origin main
+            npm run start
