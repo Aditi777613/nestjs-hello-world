@@ -33,7 +33,7 @@ jobs:
           source: "."
           target: "/home/${{ secrets.EC2_USERNAME }}/deployment"
 
-      - name: Install PM2 and Deploy to EC2
+      - name: Install PM2 and Start Application
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -48,8 +48,18 @@ jobs:
             cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
             npm install --production || exit 1
             
-              pm2 restart all || exit 1
-            
+            # Start or restart the PM2 process for your application
+            pm2 startOrRestart ecosystem.config.js --env production || exit 1
+
+      - name: Debug - Check PM2 Status
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            pm2 status
+
       - name: Debug - Check EC2 Deployment Directory
         uses: appleboy/ssh-action@master
         with:
@@ -59,4 +69,3 @@ jobs:
           script: |
             cd /home/${{ secrets.EC2_USERNAME }}/deployment
             ls -al
-
