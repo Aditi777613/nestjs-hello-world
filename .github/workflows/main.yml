@@ -1,47 +1,67 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - master
+ push:
+  branches:
+   - master
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+ deploy:
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  steps:
+   - name: Checkout code
+    uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
+   - name: Set up Node.js
+    uses: actions/setup-node@v2
+    with:
+     node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
+   - name: Install dependencies
+    run: npm install
 
-      - name: Build project
-        run: npm run build
+   - name: Build project
+    run: npm run build
 
-      - name: Deploy to EC2
-        run: |
-          scp -r . ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/deployment
+   - name: Deploy to EC2
+    uses: appleboy/scp-action@master
+    with:
+     host: ${{ secrets.EC2_HOST }}
+     username: ${{ secrets.EC2_USERNAME }}
+     key: ${{ secrets.EC2_PRIVATE_KEY }}
+     source: "."
+     target: "/home/${{ secrets.EC2_USERNAME }}/deployment"
 
-      - name: Install PM2 and Start Application
-        run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
-          if ! command -v pm2 &> /dev/null; then
-            sudo npm install -g pm2
-          fi
+   - name: Install PM2 and Deploy to EC2
+    uses: appleboy/ssh-action@master
+    with:
+     host: ${{ secrets.EC2_HOST }}
+     username: ${{ secrets.EC2_USERNAME }}
+     key: ${{ secrets.EC2_PRIVATE_KEY }}
+     script: |
+      # Install PM2 globally if not already installed
+      if ! command -v pm2 &> /dev/null; then
+       sudo npm install -g pm2
+      fi
 
-          cd /home/${{ secrets.EC2_USERNAME }}/deployment
+      cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
+      npm install --production || exit 1
+       
+      # Check if PM2 is managing any processes
+      if pm2 list | grep -q "online"; then
+       pm2 restart all || exit 1
+      else
+       # Start the application with PM2 if no process is found
+       pm2 start your-entry-file.js --name your-app-name || exit 1
+      fi
 
-          if [ -f package.json ]; then
-            npm install --production
-          fi
-          
-            pm2 restart all
-          
-          fi
-          EOF
+   - name: Debug - Check EC2 Deployment Directory
+    uses: appleboy/ssh-action@master
+    with:
+     host: ${{ secrets.EC2_HOST }}
+     username: ${{ secrets.EC2_USERNAME }}
+     key: ${{ secrets.EC2_PRIVATE_KEY }}
+     script: |
+      cd /home/${{ secrets.EC2_USERNAME }}/deployment
+      ls -al
