@@ -47,6 +47,11 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
+            # Install unzip if not already installed
+            if ! command -v unzip &> /dev/null; then
+              sudo apt-get update -y && sudo apt-get install unzip -y
+            fi
+
             mkdir -p /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
             cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
             unzip -o /home/${{ secrets.EC2_USERNAME }}/deployment/archive.zip || exit 1
