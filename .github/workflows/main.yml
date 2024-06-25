@@ -44,4 +44,4 @@ jobs:
             git pull origin master
             npm install
             npm run build
-            pm2 restart dist/main.js
+            pm2 restart
