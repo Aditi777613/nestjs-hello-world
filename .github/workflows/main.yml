@@ -19,10 +19,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --production
 
-      - name: Build project
-        run: npm run build
+      - name: Build project (if needed)
+        run: npm run build  
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@master
@@ -30,31 +30,24 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "."
+          source: "."  
           target: "/home/${{ secrets.EC2_USERNAME }}/deployment"
 
-      - name: Install PM2 and Deploy to EC2
+      - name: Install PM2 and Start Application
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            # Install PM2 globally if not already installed
             if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
             fi
 
             cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
-            npm install --production || exit 1
             
-            # Check if PM2 is managing any processes
-            if pm2 list | grep -q "online"; then
-              pm2 restart all || exit 1
-            else
-              # Start the application with PM2 if no process is found
-              pm2 start your-entry-file.js --name your-app-name || exit 1
-            fi
+            
+            pm2 startOrRestart ecosystem.config.js --env production || exit 1
 
       - name: Debug - Check EC2 Deployment Directory
         uses: appleboy/ssh-action@master
@@ -65,4 +58,3 @@ jobs:
           script: |
             cd /home/${{ secrets.EC2_USERNAME }}/deployment
             ls -al
-
