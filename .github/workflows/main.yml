@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install --production
 
-      - name: Build project (if needed)
+      - name: Build project
         run: npm run build  
 
       - name: Deploy to EC2
