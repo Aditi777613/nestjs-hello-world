@@ -47,7 +47,14 @@ jobs:
 
             cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
             npm install --production || exit 1
-            pm2 restart all || exit 1  # or any other command to restart your server
+            
+            # Check if PM2 is managing any processes
+            if pm2 list | grep -q "online"; then
+              pm2 restart all || exit 1
+            else
+              # Start the application with PM2 if no process is found
+              pm2 start your-entry-file.js --name your-app-name || exit 1
+            fi
 
       - name: Debug - Check EC2 Deployment Directory
         uses: appleboy/ssh-action@master
