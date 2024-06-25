@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Increase timeout as needed
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -19,10 +19,14 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies and build project
-        run: |
-          npm install
-          npm run build
+      - name: Install Nest.js CLI
+        run: npm install -g @nestjs/cli
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@master
@@ -33,23 +37,15 @@ jobs:
           source: "."
           target: "/home/${{ secrets.EC2_USERNAME }}/deployment"
 
-      - name: Install PM2 and Start Application
+      - name: Start Nest.js Application
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            # Install PM2 globally if not already installed
-            if ! command -v pm2 &> /dev/null; then
-              sudo npm install -g pm2
-            fi
-
-            cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
-            npm install --production || exit 1
-            
-            # Start your Node.js application (replace with your actual start command)
-            npm start  # Adjust this based on your application's start command
+            cd /home/${{ secrets.EC2_USERNAME }}/deployment
+            npm start  # Adjust this based on your Nest.js start script
 
       - name: Debug - Check PM2 Status
         uses: appleboy/ssh-action@master
