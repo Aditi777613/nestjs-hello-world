@@ -37,14 +37,10 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-
-        run: |
-        
-          ssh -i key.pem -o StrictHostKeyChecking=no ${USER_NAME}@${HOSTNAME} '
-          cd ~/nestjs-hello-world &&
-          git pull origin master &&
-          npm install &&
-          npm run build &&
-          pm2 restart dist/main.js
-          '
+          key: key.pem  # Use the SSH private key file
+          script: |
+            cd ~/nestjs-hello-world
+            git pull origin master
+            npm install
+            npm run build
+            pm2 restart dist/main.js
