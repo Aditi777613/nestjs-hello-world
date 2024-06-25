@@ -47,9 +47,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            mkdir -p /path/to/deployment/directory || exit 1
-            cd /path/to/deployment/directory || exit 1
-            unzip -o /path/to/deployment/directory/archive.zip || exit 1
+            mkdir -p /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
+            cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
+            unzip -o /home/${{ secrets.EC2_USERNAME }}/deployment/archive.zip || exit 1
             npm install --production || exit 1
             pm2 restart all || exit 1  # or any other command to restart your server
 
@@ -60,5 +60,5 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            cd /path/to/deployment/directory
+            cd /home/${{ secrets.EC2_USERNAME }}/deployment
             ls -al
