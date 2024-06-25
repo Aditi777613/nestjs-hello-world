@@ -1,4 +1,4 @@
-name: Deploy
+name: nestjs-hello-world
 
 on:
  push:
