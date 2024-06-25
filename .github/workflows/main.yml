@@ -40,8 +40,6 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           
           script: |
-            cd ~/nestjs-hello-world
-            git pull origin master
-            npm install
-            npm run build
-            pm2 restart
+          cd /home/ubuntu/Nestjs_Hello_world_app
+          npm install
+          npm start > /dev/null 2>&1 &
