@@ -19,42 +19,29 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install --production
+        run: npm install
 
       - name: Build project
-        run: npm run build  
+        run: npm run build
 
       - name: Deploy to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "."  
-          target: "/home/${{ secrets.EC2_USERNAME }}/deployment"
+        run: |
+          scp -r . ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/deployment
 
       - name: Install PM2 and Start Application
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            if ! command -v pm2 &> /dev/null; then
-              sudo npm install -g pm2
-            fi
+        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+          if ! command -v pm2 &> /dev/null; then
+            sudo npm install -g pm2
+          fi
 
-            cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
-            
-            
-            pm2 startOrRestart ecosystem.config.js --env production || exit 1
+          cd /home/${{ secrets.EC2_USERNAME }}/deployment
 
-      - name: Debug - Check EC2 Deployment Directory
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            cd /home/${{ secrets.EC2_USERNAME }}/deployment
-            ls -al
+          if [ -f package.json ]; then
+            npm install --production
+          fi
+          
+            pm2 restart all
+          
+          fi
+          EOF
