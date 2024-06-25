@@ -33,13 +33,18 @@ jobs:
           source: "."
           target: "/home/${{ secrets.EC2_USERNAME }}/deployment"
 
-      - name: Deploy to EC2
+      - name: Install PM2 and Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
+            # Install PM2 globally if not already installed
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
+
             cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
             npm install --production || exit 1
             pm2 restart all || exit 1  # or any other command to restart your server
@@ -53,3 +58,4 @@ jobs:
           script: |
             cd /home/${{ secrets.EC2_USERNAME }}/deployment
             ls -al
+
