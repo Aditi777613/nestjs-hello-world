@@ -47,6 +47,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
+            mkdir -p /path/to/deployment/directory || exit 1
             cd /path/to/deployment/directory || exit 1
             unzip -o /path/to/deployment/directory/archive.zip || exit 1
             npm install --production || exit 1
