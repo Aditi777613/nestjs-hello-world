@@ -48,8 +48,8 @@ jobs:
             cd /home/${{ secrets.EC2_USERNAME }}/deployment || exit 1
             npm install --production || exit 1
             
-            # Start your application directly
-            pm2 start your-app-entry-point.js --name your-app-name --env production || exit 1
+            # Start your Node.js application (replace with your actual start command)
+            npm start  # Adjust this based on your application's start command
 
       - name: Debug - Check PM2 Status
         uses: appleboy/ssh-action@master
@@ -69,4 +69,3 @@ jobs:
           script: |
             cd /home/${{ secrets.EC2_USERNAME }}/deployment
             ls -al
-
