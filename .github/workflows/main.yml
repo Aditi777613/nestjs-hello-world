@@ -48,7 +48,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-
           script: |
             set -e
 
@@ -94,7 +93,7 @@ jobs:
             pm2 save
             
             # Ensure the user and home path are set correctly for the startup command
-            sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER
+            sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER --interpreter=$(which node)
 
       - name: Clean up
         run: rm key.pem build-artifacts.tar.gz
