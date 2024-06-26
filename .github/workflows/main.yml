@@ -65,7 +65,7 @@ jobs:
             tar -xzf build-artifacts.tar.gz
 
             # Ensure PM2 is installed globally
-            if ! command -v pm2 >/dev/null 2>&1; then
+            if ! which pm2 >/dev/null 2>&1; then
               echo "PM2 not found, installing..."
               npm install pm2@latest -g
             fi
@@ -74,7 +74,7 @@ jobs:
             export PATH=$PATH:$(npm bin -g)
             
             # Ensure PM2 is available in PATH
-            if ! command -v pm2 >/dev/null 2>&1; then
+            if ! which pm2 >/dev/null 2>&1; then
               echo "PM2 still not found in PATH!"
               exit 1
             fi
