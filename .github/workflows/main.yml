@@ -64,10 +64,19 @@ jobs:
             # Extract the build artifacts
             tar -xzf build-artifacts.tar.gz
 
-            # Check if PM2 is installed, if not install it
+            # Ensure PM2 is installed globally
             if ! command -v pm2 >/dev/null 2>&1; then
               echo "PM2 not found, installing..."
               npm install pm2@latest -g
+            fi
+            
+            # Add npm global bin to PATH in case it's not available
+            export PATH=$PATH:$(npm bin -g)
+            
+            # Ensure PM2 is available in PATH
+            if ! command -v pm2 >/dev/null 2>&1; then
+              echo "PM2 still not found in PATH!"
+              exit 1
             fi
 
             # Stop previous PM2 processes if any
@@ -83,7 +92,9 @@ jobs:
 
             # Save PM2 process list and enable startup script
             pm2 save
-            sudo env PATH=\$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER
+            
+            # Ensure the user and home path are set correctly for the startup command
+            sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER
 
       - name: Clean up
         run: rm key.pem build-artifacts.tar.gz
