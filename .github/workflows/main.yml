@@ -48,17 +48,39 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-
           script: |
+            set -e
+
+            # Navigate to the application directory
             cd /home/ubuntu/Nestjs_Hello_world_app
+
+            # Verify the tar file exists
+            if [ ! -f build-artifacts.tar.gz ]; then
+              echo "Build artifacts not found!"
+              exit 1
+            fi
+
+            # Extract the build artifacts
             tar -xzf build-artifacts.tar.gz
-            # If PM2 is not installed, install it globally
-            if ! pm2 -v > /dev/null 2>&1; then
+
+            # Check if PM2 is installed, if not install it
+            if ! command -v pm2 >/dev/null 2>&1; then
+              echo "PM2 not found, installing..."
               npm install pm2@latest -g
             fi
+
+            # Stop previous PM2 processes if any
+            if pm2 status | grep -q 'nestjs-app'; then
+              echo "Stopping existing PM2 process..."
+              pm2 stop nestjs-app
+              pm2 delete nestjs-app
+            fi
+
             # Start the application using PM2
-            pm2 delete all || true
+            echo "Starting application with PM2..."
             pm2 start dist/main.js --name nestjs-app
+
+            # Save PM2 process list and enable startup script
             pm2 save
             pm2 startup
 
