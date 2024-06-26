@@ -48,6 +48,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
+
           script: |
             set -e
 
@@ -55,7 +56,7 @@ jobs:
             cd /home/ubuntu/Nestjs_Hello_world_app
 
             # Verify the tar file exists
-            if [ ! -f build-artifacts.tar.gz ]; then
+            if [! -f build-artifacts.tar.gz ]; then
               echo "Build artifacts not found!"
               exit 1
             fi
@@ -64,7 +65,7 @@ jobs:
             tar -xzf build-artifacts.tar.gz
 
             # Ensure PM2 is installed globally
-            if ! which pm2 >/dev/null 2>&1; then
+            if! which pm2 >/dev/null 2>&1; then
               echo "PM2 not found, installing..."
               npm install pm2@latest -g
             fi
@@ -73,7 +74,7 @@ jobs:
             export PATH=$PATH:$(npm bin -g)
             
             # Ensure PM2 is available in PATH
-            if ! which pm2 >/dev/null 2>&1; then
+            if! which pm2 >/dev/null 2>&1; then
               echo "PM2 still not found in PATH!"
               exit 1
             fi
@@ -93,7 +94,7 @@ jobs:
             pm2 save
             
             # Ensure the user and home path are set correctly for the startup command
-            sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER --interpreter=$(which node)
+            sudo pm2 startup systemd -u $USER
 
       - name: Clean up
         run: rm key.pem build-artifacts.tar.gz
