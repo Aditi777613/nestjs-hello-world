@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
@@ -27,11 +27,6 @@ jobs:
       # Archive the build artifacts
       - name: Archive build artifacts
         run: tar -czf build-artifacts.tar.gz dist/ node_modules/
-      
-      - name: Prepare SSH Key
-        run: |
-          echo "${{ secrets.EC2_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
 
       - name: Upload build artifacts to the EC2 instance
         uses: appleboy/scp-action@master
@@ -48,12 +43,14 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-
           script: |
             set -e
 
             # Navigate to the application directory
             cd /home/ubuntu/Nestjs_Hello_world_app
+
+            # Pull the latest code from the repository
+            git pull origin master
 
             # Verify the tar file exists
             if [ -f build-artifacts.tar.gz ]; then
@@ -71,10 +68,10 @@ jobs:
               echo "PM2 not found, installing..."
               npm install pm2@latest -g
             fi
-            
+
             # Add npm global bin to PATH in case it's not available
             export PATH=$PATH:$(npm bin -g)
-            
+
             # Ensure PM2 is available in PATH
             if ! which pm2 >/dev/null 2>&1; then
               echo "PM2 still not found in PATH!"
@@ -94,9 +91,9 @@ jobs:
 
             # Save PM2 process list and enable startup script
             pm2 save
-            
+
             # Ensure the user and home path are set correctly for the startup command
             sudo pm2 startup systemd -u $USER
 
       - name: Clean up
-        run: rm key.pem build-artifacts.tar.gz
+        run: rm build-artifacts.tar.gz
