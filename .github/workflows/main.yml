@@ -35,7 +35,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: "build-artifacts.tar.gz"
-          target: "/home/ubuntu/Nestjs_Hello_world_app/"
+          target: "/home/ubuntu/nestjs-hello-world/"
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -47,10 +47,7 @@ jobs:
             set -e
 
             # Navigate to the application directory
-            cd /home/ubuntu/Nestjs_Hello_world_app
-
-            # Pull the latest code from the repository
-            git pull origin master
+            cd /home/ubuntu/nestjs-hello-world
 
             # Verify the tar file exists
             if [ -f build-artifacts.tar.gz ]; then
